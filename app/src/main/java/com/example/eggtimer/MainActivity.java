@@ -21,7 +21,9 @@ public class MainActivity extends AppCompatActivity {
     private long leftTime;
     private MediaPlayer mediaPlayer;
 
+    // time in milliseconds = 10 minutes
     private int tenMinutes = 600000;
+    // time in milliseconds = 1 second
     private int oneSecond = 1000;
 
     @Override
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
         adjustSeekBar();
     }
 
@@ -52,11 +55,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTick(long millisUntilFinished) {
                 Log.i("Count down started", String.valueOf(millisUntilFinished/oneSecond));
-                leftTime = millisUntilFinished;
-                long min = (millisUntilFinished / (oneSecond * 60));
-                long sec = ((millisUntilFinished / oneSecond) % 60);
-                String formattedTime = String.format("%02d:%02d", min, sec);
-                textView.setText(formattedTime);
+                // convert long to int
+                // convert milliseconds to seconds by /1000
+                updateTimer((int) millisUntilFinished /1000);
             }
 
             @Override
@@ -68,6 +69,13 @@ public class MainActivity extends AppCompatActivity {
         }.start();
     }
 
+    public void updateTimer(int secondsLeft) {
+        int min = secondsLeft / 60;
+        int sec = secondsLeft - (min * 60);
+        String formattedTime = String.format("%02d:%02d", min, sec);
+        textView.setText(formattedTime);
+    }
+
     public void timerPause() {
         timer.cancel();
     }
@@ -77,13 +85,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void adjustSeekBar() {
-        seekBar.setMax(tenMinutes);
-        seekBar.setProgress(Integer.valueOf((int) leftTime));
+        // 600 seconds = 10 min
+        seekBar.setMax(600);
+        // 30 seconds
+        seekBar.setProgress(600);
 
+        // what to update if the seekBar changes
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
+               updateTimer(progress);
             }
 
             @Override
@@ -97,4 +108,5 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
 }
