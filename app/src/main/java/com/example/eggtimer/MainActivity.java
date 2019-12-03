@@ -12,19 +12,26 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    public static final String LOG_TAG = "MainActivity";
 
     private SeekBar seekBar;
-    private ToggleButton toggleButton;
-    private TextView textView;
-    private CountDownTimer timer;
-    private long leftTime;
-    private MediaPlayer mediaPlayer;
 
-    // time in milliseconds = 10 minutes
-    private int tenMinutes = 600000;
-    // time in milliseconds = 1 second
-    private int oneSecond = 1000;
+    // 10 minutes = 600 seconds
+    private final static  int MAX = 600;
+    // 5 minutes = 300 seconds
+    private final static int PROGRESS = 300;
+    // 1 second = 1000 milliseconds
+    private final static int SECOND = 1000;
+
+    private TextView timerTextView;
+
+    private ToggleButton toggleButton;
+
+    private CountDownTimer timer;
+
+    private MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,69 +39,30 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         seekBar = findViewById(R.id.seekbar);
+        seekBar.setMax(MAX);
+        seekBar.setProgress(PROGRESS);
+
+        timerTextView = findViewById(R.id.timer_text_view);
         toggleButton = findViewById(R.id.toggle_button);
-        textView = findViewById(R.id.timer_text_view);
+
         mediaPlayer = MediaPlayer.create(this, R.raw.beep);
 
-        toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    timerStart(tenMinutes);
-                } else {
-                    timerPause();
-                }
-            }
-        });
-
-        adjustSeekBar();
+        updateCounterFromSeekbar();
     }
 
-    public void timerStart(long timeLengthMilli) {
-        timer = new CountDownTimer(tenMinutes, oneSecond) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                Log.i("Count down started", String.valueOf(millisUntilFinished/oneSecond));
-                // convert long to int
-                // convert milliseconds to seconds by /1000
-                updateTimer((int) millisUntilFinished /1000);
-            }
-
-            @Override
-            public void onFinish() {
-                Log.i("Count down finished ", "0 seconds left");
-                // play sound
-                mediaPlayer.start();
-            }
-        }.start();
-    }
-
-    public void updateTimer(int secondsLeft) {
-        int min = secondsLeft / 60;
-        int sec = secondsLeft - (min * 60);
+    public void updateTimer(int i){
+        int min = i / 60;
+        int sec = i - (min * 60);
         String formattedTime = String.format("%02d:%02d", min, sec);
-        textView.setText(formattedTime);
+        timerTextView.setText(formattedTime);
     }
 
-    public void timerPause() {
-        timer.cancel();
-    }
+    public void updateCounterFromSeekbar() {
 
-    public void resumeTimer() {
-        timerStart(leftTime);
-    }
-
-    public void adjustSeekBar() {
-        // 600 seconds = 10 min
-        seekBar.setMax(600);
-        // 30 seconds
-        seekBar.setProgress(600);
-
-        // what to update if the seekBar changes
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-               updateTimer(progress);
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                updateTimer(i);
             }
 
             @Override
@@ -107,6 +75,47 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
     }
 
+    @Override
+    public void onClick(View view) {
+        toggleButton = (ToggleButton) view;
+
+        Log.i(LOG_TAG, "Toggle Button was clicked");
+
+        toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    startTimer();
+                } else {
+                    pauseTimer();
+                }
+            }
+        });
+    }
+
+    public void startTimer(){
+        timer = new CountDownTimer(seekBar.getProgress() * SECOND, SECOND) {
+            @Override
+            public void onTick(long l) {
+                Log.i("Count down started", String.valueOf(l/SECOND));
+                updateTimer((int) l / SECOND);
+            }
+
+            @Override
+            public void onFinish() {
+                Log.i("Count down finished ", "0 seconds left");
+                // play sound
+                mediaPlayer.start();
+            }
+        }.start();
+    }
+
+    public void pauseTimer() {
+        timer.cancel();
+    }
 }
+
+
