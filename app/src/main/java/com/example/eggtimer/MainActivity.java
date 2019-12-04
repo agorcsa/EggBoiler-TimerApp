@@ -12,7 +12,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity {
 
     public static final String LOG_TAG = "MainActivity";
 
@@ -48,6 +48,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mediaPlayer = MediaPlayer.create(this, R.raw.beep);
 
         updateCounterFromSeekbar();
+
+        setupTimer();
+
+        toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    startTimer();
+                } else {
+                    pauseTimer();
+                }
+            }
+        });
     }
 
     public void updateTimer(int i){
@@ -78,29 +92,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    @Override
-    public void onClick(View view) {
-        toggleButton = (ToggleButton) view;
-
-        Log.i(LOG_TAG, "Toggle Button was clicked");
-
-        toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if (isChecked) {
-                    startTimer();
-                } else {
-                    pauseTimer();
-                }
-            }
-        });
-    }
-
-    public void startTimer(){
+    public void  setupTimer() {
         timer = new CountDownTimer(seekBar.getProgress() * SECOND, SECOND) {
             @Override
             public void onTick(long l) {
                 Log.i("Count down started", String.valueOf(l/SECOND));
+                //Log.i("Count down started", String.valueOf(seekBar.getProgress()));
                 updateTimer((int) l / SECOND);
             }
 
@@ -110,7 +107,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // play sound
                 mediaPlayer.start();
             }
-        }.start();
+        };
+    }
+
+    public void startTimer() {
+        timer.start();
     }
 
     public void pauseTimer() {
