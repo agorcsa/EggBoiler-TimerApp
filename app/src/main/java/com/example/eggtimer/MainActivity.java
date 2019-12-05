@@ -6,7 +6,6 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
-import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -31,7 +30,11 @@ public class MainActivity extends AppCompatActivity {
 
     private CountDownTimer timer;
 
+    private CountDownTimer timerUpdate;
+
     private MediaPlayer mediaPlayer;
+
+    private int timerPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +59,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
-                    startTimer();
+                    timerUpdate = new CountDownTimer(seekBar.getProgress() * SECOND, SECOND) {
+                        @Override
+                        public void onTick(long l) {
+                            updateTimer((int) l / SECOND);
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            mediaPlayer.start();
+                        }
+                    }.start();
                 } else {
                     pauseTimer();
                 }
@@ -92,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void  setupTimer() {
+    public void setupTimer() {
         timer = new CountDownTimer(seekBar.getProgress() * SECOND, SECOND) {
             @Override
             public void onTick(long l) {
