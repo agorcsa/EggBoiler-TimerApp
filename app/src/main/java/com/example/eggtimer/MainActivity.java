@@ -30,11 +30,8 @@ public class MainActivity extends AppCompatActivity {
 
     private CountDownTimer timer;
 
-    private CountDownTimer timerUpdate;
-
     private MediaPlayer mediaPlayer;
 
-    private int timerPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,15 +56,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
-                    timerUpdate = new CountDownTimer(seekBar.getProgress() * SECOND, SECOND) {
+                    timer = new CountDownTimer(seekBar.getProgress() * SECOND, SECOND) {
                         @Override
                         public void onTick(long l) {
-                            updateTimer((int) l / SECOND);
+                            updateTimer((int) (l / SECOND));
                         }
 
                         @Override
                         public void onFinish() {
-                            mediaPlayer.start();
+
                         }
                     }.start();
                 } else {
@@ -89,7 +86,22 @@ public class MainActivity extends AppCompatActivity {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
                 updateTimer(i);
+                pauseTimer();
+
+                timer = new CountDownTimer(seekBar.getProgress() * SECOND, SECOND) {
+                    @Override
+                    public void onTick(long l) {
+
+                    }
+
+                    @Override
+                    public void onFinish() {
+
+                    }
+                };
+                startTimer();
             }
 
             @Override
@@ -102,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
     public void setupTimer() {
